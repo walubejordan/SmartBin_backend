@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
 require("dotenv").config();
-
 const { Pool } = require("pg");
 
 const pool = new Pool({
@@ -10,20 +9,32 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Initialize Firebase Admin
+// Firebase service account from environment variables
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE,
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+  universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+};
+
 admin.initializeApp({
-  credential: admin.credential.cert(require("./serviceAccountKey.json")),
+  credential: admin.credential.cert(serviceAccount),
 });
 
 // Middleware to verify Firebase token
 async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
-
   if (!token) return res.status(401).send({ error: "No token provided" });
 
   try {
@@ -35,20 +46,8 @@ async function verifyToken(req, res, next) {
   }
 }
 
-// Test route
 app.get("/", (req, res) => {
   res.send("SmartBin Backend is running");
-});
-
-// Protected route example
-app.get("/profile", verifyToken, (req, res) => {
-  res.send({ message: "Token is valid", user: req.user });
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
 
 // Add a new bin
@@ -57,7 +56,7 @@ app.post("/bins", verifyToken, async (req, res) => {
 
   try {
     const result = await pool.query(
-      "insert into bins (name, Location) values ($1, $2, $3) returning *",
+      "INSERT INTO bins (name, Location) VALUES ($1, $2) RETURNING *",
       [name, Location]
     );
     res.send(result.rows[0]);
@@ -70,7 +69,7 @@ app.post("/bins", verifyToken, async (req, res) => {
 // Get all bins
 app.get("/bins", async (req, res) => {
   try {
-    const result = await pool.query("select * from bins");
+    const result = await pool.query("SELECT * FROM bins");
     res.send(result.rows);
   } catch (err) {
     res.status(500).send({ error: "Failed to fetch bins" });
@@ -83,10 +82,9 @@ app.post("/assign-bin", verifyToken, async (req, res) => {
 
   try {
     const result = await pool.query(
-      "insert into assignments (user_id, bin_id) values ($1, $2) returning *",
+      "INSERT INTO assignments (user_id, bin_id) VALUES ($1, $2) RETURNING *",
       [user_id, bin_id]
     );
-
     res.send(result.rows[0]);
   } catch (err) {
     res.status(500).send({ error: "Failed to assign bin" });
@@ -98,15 +96,22 @@ app.get("/user-bins/:user_id", verifyToken, async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    const result = await pool.query(`
-      select bins.*
-      from bins
-      inner join assignments on bins.id = assignments.bin_id
-      where assignments.user_id = $1
-    `, [user_id]);
+    const result = await pool.query(
+      `
+      SELECT bins.*
+      FROM bins
+      INNER JOIN assignments 
+      ON bins.id = assignments.bin_id
+      WHERE assignments.user_id = $1
+    `,
+      [user_id]
+    );
 
     res.send(result.rows);
   } catch (err) {
     res.status(500).send({ error: "Failed to fetch user bins" });
   }
 });
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
