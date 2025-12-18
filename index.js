@@ -67,12 +67,13 @@ app.post("/bins", verifyToken, async (req, res) => {
 });
 
 // Get all bins
-app.get("/bins", async (req, res) => {
+app.get('/bins', async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM bins");
-    res.send(result.rows);
-  } catch (err) {
-    res.status(500).send({ error: "Failed to fetch bins" });
+    const result = await pool.query('SELECT * FROM bins');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('FETCH BINS ERROR:',error);
+    res.status(500).json({ error: 'Failed to fetch bins' });
   }
 });
 
