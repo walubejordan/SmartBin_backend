@@ -50,6 +50,10 @@ app.get("/", (req, res) => {
   res.send("SmartBin Backend is running");
 });
 
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 // Add a new bin
 app.post("/bins", verifyToken, async (req, res) => {
   const { name, Location } = req.body;
