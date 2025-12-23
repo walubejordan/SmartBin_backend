@@ -9,6 +9,9 @@ console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
 console.log("DATABASE_URL length:", process.env.DATABASE_URL?.length);
 
 
+import pkg from 'pg';
+const { Pool } = pkg;
+
 const pool = new Pool({
   host: process.env.PGHOST,
   port: Number(process.env.PGPORT),
@@ -16,8 +19,8 @@ const pool = new Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   ssl: { rejectUnauthorized: false },
-  family: 4,
 });
+
 
 const app = express();
 app.use(express.json());
