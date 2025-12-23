@@ -4,6 +4,11 @@ const admin = require("firebase-admin");
 require("dotenv").config();
 const { Pool } = require("pg");
 
+// Debugging: Log the DATABASE_URL to ensure it's being read correctly
+console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("DATABASE_URL length:", process.env.DATABASE_URL?.length);
+
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
