@@ -16,6 +16,7 @@ const pool = new Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   ssl: { rejectUnauthorized: false },
+  family: 4,
 });
 
 const app = express();
