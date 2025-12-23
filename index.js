@@ -71,15 +71,20 @@ app.post("/bins", verifyToken, async (req, res) => {
 });
 
 // Get all bins
-app.get('/bins', async (req, res) => {
+app.get("/bins", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM bins');
+    const result = await pool.query("SELECT * FROM bins");
     res.json(result.rows);
-  } catch (error) {
-    console.error('FETCH BINS ERROR:',error);
-    res.status(500).json({ error: 'Failed to fetch bins' });
+  } catch (err) {
+    console.error("❌ BINS ERROR:", err.message);
+    console.error(err);
+    res.status(500).json({
+      error: err.message,
+      detail: err.detail || null
+    });
   }
 });
+
 
 // Assign a bin to a user
 app.post("/assign-bin", verifyToken, async (req, res) => {
