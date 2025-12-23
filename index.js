@@ -9,8 +9,8 @@ console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
 console.log("DATABASE_URL length:", process.env.DATABASE_URL?.length);
 
 
-import pkg from 'pg';
-const { Pool } = pkg;
+const { Pool } = require('pg');
+
 
 const pool = new Pool({
   host: process.env.PGHOST,
