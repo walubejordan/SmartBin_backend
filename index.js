@@ -9,7 +9,6 @@ console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
 console.log("DATABASE_URL length:", process.env.DATABASE_URL?.length);
 
 
-const { Pool } = require('pg');
 
 
 const pool = new Pool({
