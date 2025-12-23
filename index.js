@@ -56,12 +56,12 @@ app.get("/health", (req, res) => {
 
 // Add a new bin
 app.post("/bins", verifyToken, async (req, res) => {
-  const { name, Location } = req.body;
+  const { Name, Location, Status, Date } = req.body;
 
   try {
     const result = await pool.query(
-      "INSERT INTO bins (name, Location) VALUES ($1, $2) RETURNING *",
-      [name, Location]
+      "INSERT INTO bins (Name, Location, Status, Date) VALUES ($1, $2, $3, $4) RETURNING *",
+      [Name, Location, Status, Date]
     );
     res.send(result.rows[0]);
   } catch (err) {
